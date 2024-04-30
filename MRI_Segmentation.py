@@ -1,14 +1,28 @@
 from IPython.display import clear_output
 import warnings
+import random
+import cv2
+from detectron2.engine import HookBase
+from detectron2.data import build_detection_train_loader, build_detection_test_loader
+from detectron2.evaluation import COCOEvaluator
+from matplotlib import pyplot as plt
+from detectron2.engine import DefaultPredictor
+from detectron2.utils.visualizer import Visualizer, ColorMode
+from detectron2.data import MetadataCatalog, DatasetCatalog
+from detectron2.utils.logger import setup_logger
+from detectron2 import model_zoo
+from detectron2.engine import DefaultTrainer
+from detectron2.config import get_cfg
+from detectron2.evaluation import COCOEvaluator, inference_on_dataset
+from detectron2.data.datasets import register_coco_instances
+
 warnings.filterwarnings("ignore")
 
 !pip install 'git+https://github.com/facebookresearch/detectron2.git'
 clear_output()
 
 
-from detectron2.engine import HookBase
-from detectron2.data import build_detection_train_loader, build_detection_test_loader
-from detectron2.evaluation import COCOEvaluator
+
 
 class MyTrainer(DefaultTrainer):
 
@@ -55,18 +69,9 @@ class EarlyStoppingException(Exception):
     pass
 
 
-from detectron2.data.datasets import register_coco_instances
 register_coco_instances("my_dataset_train", {}, "./train/_annotations.coco.json", "./train")
 register_coco_instances("my_dataset_val", {}, "./valid/_annotations.coco.json", "./valid")
 
-
-
-from detectron2.utils.logger import setup_logger
-from detectron2 import model_zoo
-from detectron2.engine import DefaultTrainer
-from detectron2.config import get_cfg
-from detectron2.evaluation import COCOEvaluator, inference_on_dataset
-from detectron2.data import build_detection_test_loader
 
 # Set up the logger
 setup_logger()
@@ -111,14 +116,6 @@ trainer.train()
 evaluator = COCOEvaluator("my_dataset_val", cfg, False, output_dir="./output/")
 val_loader = build_detection_test_loader(cfg, "my_dataset_val")
 inference_on_dataset(trainer.model, val_loader, evaluator)
-
-
-import random
-import cv2
-from matplotlib import pyplot as plt
-from detectron2.engine import DefaultPredictor
-from detectron2.utils.visualizer import Visualizer, ColorMode
-from detectron2.data import MetadataCatalog, DatasetCatalog
 
 
 def get_class_name_from_filename(filename):
